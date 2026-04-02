@@ -5,6 +5,22 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
   </PropertyGroup>
+  
+  <PropertyGroup>
+    <IsPackable>true</IsPackable>
+    <PackageId>Boxit.BulkInsert.SQLServer</PackageId>
+    <Title>Boxit.BulkInsert.SQLServer</Title>
+    <Authors>Boxit</Authors>
+    <Description>A simple way of doing bulk inserts for SQLServer using Entity Framework Core.</Description>
+    <PackageTags>SQLServer;BulkInsert;EntityFrameworkCore;EFCore</PackageTags>
+    <PackageLicenseExpression>MIT</PackageLicenseExpression>
+    <RepositoryUrl>https://github.com/Boxit-Last-Mile/BulkInsert.git</RepositoryUrl>
+    <PackageReadmeFile>README.md</PackageReadmeFile>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <None Include="..\README.md" Pack="true" PackagePath="\" />
+  </ItemGroup>
 
   <ItemGroup>
     <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer"/>
