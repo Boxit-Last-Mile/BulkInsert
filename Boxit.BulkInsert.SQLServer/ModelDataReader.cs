@@ -158,7 +158,7 @@ internal class ModelDataReader<TModel> : IDataReader {
     }
 
     public IDataReader GetData(int i) {
-        throw new NotImplementedException();
+        throw new NotSupportedException();
     }
 
     public string GetDataTypeName(int i) {
