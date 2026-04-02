@@ -1,4 +1,3 @@
-
 name: Build and Test
 
 on:
@@ -31,4 +30,4 @@ jobs:
           sqllocaldb info MSSQLLocalDB
 
       - name: Run .NET Tests
-        run: dotnet test YourSolution.sln
+        run: dotnet test
