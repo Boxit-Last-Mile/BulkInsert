@@ -64,7 +64,12 @@ internal class ModelDataReader<TModel> : IDataReader {
             var generatedValue = prop.ValueGenerated is ValueGenerated.OnAdd or ValueGenerated.OnAddOrUpdate || prop.GetValueGeneratorFactory() != null;
 
             if (generatedValue && selector.TrySelect(prop, entityType, out var generator)) {
-                accessor = entity => generator!.Next(dbContext.Entry(entity!));
+                accessor = entity =>
+                {
+                    var value = generator!.Next(dbContext.Entry(entity!));
+                    prop.PropertyInfo!.SetMethod!.Invoke(entity, [value]);
+                    return value;
+                };
             } else if (!prop.IsShadowProperty()) {
                 // Regular CLR property
                 accessor = entity => prop.PropertyInfo!.GetValue(entity);

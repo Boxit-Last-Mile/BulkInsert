@@ -19,6 +19,7 @@
     <File Path=".gitignore" />
     <File Path="README.md" />
   </Folder>
+  <Project Path="Boxit.BulkInsert.SQLServer.Test.Unit/Boxit.BulkInsert.SQLServer.Test.Unit.csproj" />
   <Project Path="Boxit.BulkInsert.SQLServer/Boxit.BulkInsert.SQLServer.csproj" />
 
 </Solution>

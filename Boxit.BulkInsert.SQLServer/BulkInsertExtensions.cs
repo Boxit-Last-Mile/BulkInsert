@@ -23,20 +23,20 @@ public static class BulkInsertExtensions
     /// Collections aren't (yet) supported as navigation properties. <br />
     /// If you have a collection as navigation property, you should leave it empty and bulk-insert the referenced models in a second step. 
     /// </li>
-    /// <li>
-    /// If the model you are referencing is using a (non-collection) navigation property, the value of that property needs to be tracked by EF to retrieve its ID.
-    /// </li>
     /// </ul>
     /// </remarks>
-    public static async Task BulkInsert<TModel>(this DbContext dbContext, IEnumerable<TModel> entities)
+    public static async Task BulkInsertAsync<TModel>(this DbContext dbContext, IEnumerable<TModel> entities)
         where TModel : class
     {
+        var entityType = dbContext.Model.FindEntityType(typeof(TModel)) ??
+                         throw new InvalidOperationException($"Entity type {typeof(TModel).Name} not in EF model");
+        
         var connectionString = dbContext.Database.GetDbConnection().ConnectionString;
         var dataReader = new ModelDataReader<TModel>(entities)
             .WithFieldsFromDbContext(dbContext);
 
         var bulkCopy = new SqlBulkCopy(connectionString);
-        bulkCopy.DestinationTableName = "Geokodierung.GeostrukturEintrag";
+        bulkCopy.DestinationTableName = $"{entityType.GetSchema()}.{entityType.GetTableName()}";
         bulkCopy.EnableStreaming = true;
 
         foreach (var field in dataReader.Fields)
