@@ -1,0 +1,55 @@
+name: Publish NuGet Package
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+jobs:
+  publish:
+    runs-on: windows-latest
+
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v3
+        with:
+          dotnet-version: '10.0.x'
+
+      - name: Extract Version
+        shell: pwsh
+        run: |
+          $tag = "${{ github.ref_name }}"
+          $version = $tag.Substring(1)
+          echo "VERSION=$version" >> $env:GITHUB_ENV
+
+      - name: Restore dependencies
+        run: dotnet restore
+
+      - name: Install SQL Server LocalDB
+        shell: pwsh
+        run: |
+          Invoke-WebRequest -Uri https://aka.ms/vs/17/release/vs_buildtools.exe -OutFile vs_buildtools.exe
+          Start-Process -Wait -FilePath .\vs_buildtools.exe -ArgumentList `
+            "--quiet",
+            "--wait",
+            "--norestart",
+            "--nocache",
+            "--installPath","C:\BuildTools",
+            "--add","Microsoft.VisualStudio.Workload.DataBuildTools",
+            "--add","Microsoft.VisualStudio.Component.SQL.LocalDB.Runtime"
+
+      - name: Start LocalDB instance
+        run: |
+          sqllocaldb start MSSQLLocalDB
+          sqllocaldb info MSSQLLocalDB
+
+      - name: Run Tests
+        run: dotnet test --configuration Release
+
+      - name: Pack
+        run: dotnet pack Boxit.BulkInsert.SQLServer\Boxit.BulkInsert.SQLServer.csproj --configuration Release /p:PackageVersion=${{ env.VERSION }} --output .
+
+      - name: Push to NuGet
+        run: dotnet nuget push *.nupkg --api-key ${{ secrets.NUGET_API_KEY }} --source https://api.nuget.org/v3/index.json --skip-duplicate
