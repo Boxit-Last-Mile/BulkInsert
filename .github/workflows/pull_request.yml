@@ -1,0 +1,34 @@
+
+name: Build and Test
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  build:
+    runs-on: windows-latest
+
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Install SQL Server LocalDB
+        shell: pwsh
+        run: |
+          Invoke-WebRequest -Uri https://aka.ms/vs/17/release/vs_buildtools.exe -OutFile vs_buildtools.exe
+          Start-Process -Wait -FilePath .\vs_buildtools.exe -ArgumentList `
+            "--quiet",
+            "--wait",
+            "--norestart",
+            "--nocache",
+            "--installPath","C:\BuildTools",
+            "--add","Microsoft.VisualStudio.Workload.DataBuildTools",
+            "--add","Microsoft.VisualStudio.Component.SQL.LocalDB.Runtime"
+
+      - name: Start LocalDB instance
+        run: |
+          sqllocaldb start MSSQLLocalDB
+          sqllocaldb info MSSQLLocalDB
+
+      - name: Run .NET Tests
+        run: dotnet test YourSolution.sln
