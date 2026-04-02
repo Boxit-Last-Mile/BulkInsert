@@ -1,0 +1,24 @@
+<Solution>
+
+    <!-- Solution Items -->
+    <!--
+    <Folder Name="/Solution Items/">
+        <File Path="Directory.Packages.props" />
+    </Folder>
+    -->
+
+    <!-- List of Projects -->
+    <!--
+    <Project Path="ADD_PROJECT_FILE_1_RELATIVE_PATH_HERE" />
+    <Project Path="ADD_PROJECT_FILE_2_RELATIVE_PATH_HERE">
+        <Configuration />
+        <Deploy />
+    </Project>
+    -->
+  <Folder Name="/Solution FIles/">
+    <File Path=".gitignore" />
+    <File Path="README.md" />
+  </Folder>
+  <Project Path="Boxit.BulkInsert.SQLServer/Boxit.BulkInsert.SQLServer.csproj" />
+
+</Solution>
