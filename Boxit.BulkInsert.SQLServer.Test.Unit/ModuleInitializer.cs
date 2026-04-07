@@ -11,7 +11,7 @@ public static class ModuleInitializer
     {
         VerifierSettings.InitializePlugins();
         LocalDbLogging.EnableVerbose();
-        LocalDbSettings.ConnectionBuilder(_ => _.ConnectTimeout = 300);
+        LocalDbSettings.ConnectionBuilder(x => x.ConnectTimeout = 300);
         LocalDbTestBase<DatabaseContext>.Initialize();
     }
 }

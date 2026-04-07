@@ -5,6 +5,7 @@
   </PropertyGroup>
   <ItemGroup>
     <PackageVersion Include="EfLocalDb.NUnit" Version="24.0.0" />
+    <PackageVersion Include="JetBrains.Annotations" Version="2025.2.4" />
     <PackageVersion Include="Microsoft.EntityFrameworkCore" Version="10.0.5" />
     <PackageVersion Include="Microsoft.EntityFrameworkCore.Design" Version="10.0.5" />
     <PackageVersion Include="Microsoft.EntityFrameworkCore.SqlServer" Version="10.0.5" />

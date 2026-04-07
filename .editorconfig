@@ -10,10 +10,12 @@ insert_final_newline = false
 [*.yml]
 indent_size = 2
 tab_width = 2
+insert_final_newline = true
 
 [*.cs]
 indent_size = 4
 tab_width = 4
+insert_final_newline = true
 
 # Microsoft .NET properties
 csharp_new_line_before_members_in_object_initializers = false
@@ -80,6 +82,7 @@ resharper_web_config_wrong_module_highlighting = warning
 [*.md]
 indent_size = 4
 tab_width = 4
+insert_final_newline = true
 
 [*.{xml,slnx,csproj}]
 indent_size = 2
