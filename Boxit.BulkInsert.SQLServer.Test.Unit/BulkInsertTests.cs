@@ -1,5 +1,4 @@
-﻿using System.Data;
-using Boxit.BulkInsert.SQLServer.Test.Unit.EntityFramework;
+﻿using Boxit.BulkInsert.SQLServer.Test.Unit.EntityFramework;
 using Boxit.BulkInsert.SQLServer.Test.Unit.EntityFramework.Models;
 using EfLocalDbNunit;
 using FluentAssertions;
@@ -7,12 +6,15 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Boxit.BulkInsert.SQLServer.Test.Unit;
 
+/// <summary>
+/// Tests the basic bulk insertion feature
+/// </summary>
 public class BulkInsertTests : LocalDbTestBase<DatabaseContext>
 {
     [Test]
     public async Task BulkInsert_WithEmptyEnumerable_InsertsNothing()
     {
-        await ActData.BulkInsertAsync<ChildModel>([]);
+        await ActData.BulkInsert<ChildModel>([]).ExecuteAsync();
 
         var children = await AssertData.Children.ToArrayAsync();
         var parents = await AssertData.Parents.ToArrayAsync();
@@ -27,7 +29,7 @@ public class BulkInsertTests : LocalDbTestBase<DatabaseContext>
         var parent = new ParentModel { Id = Guid.NewGuid(), Name = "Parent" };
         var child = new ChildModel { Name = "Child", Parent = parent };
 
-        await ActData.BulkInsertAsync<ChildModel>([child]);
+        await ActData.BulkInsert<ChildModel>([child]).ExecuteAsync();
 
         var children = await AssertData.Children.ToArrayAsync();
         var parents = await AssertData.Parents.ToArrayAsync();
@@ -35,7 +37,7 @@ public class BulkInsertTests : LocalDbTestBase<DatabaseContext>
         var savedChild = children.Should().ContainSingle().Subject;
         savedChild.Name.Should().Be(child.Name);
         savedChild.Id.Should().NotBeEmpty();
-        (await GetParentIdAsync(savedChild)).Should().Be(parent.Id);
+        (await Helpers.GetParentIdAsync(savedChild)).Should().Be(parent.Id);
 
         parents.Should().BeEmpty();
     }
@@ -46,15 +48,15 @@ public class BulkInsertTests : LocalDbTestBase<DatabaseContext>
         var parent = new ParentModel { Id = Guid.NewGuid(), Name = "Parent" };
         var child = new ChildModel { Name = "Child", Parent = parent };
 
-        await ActData.BulkInsertAsync<ParentModel>([parent]);
-        await ActData.BulkInsertAsync<ChildModel>([child]);
+        await ActData.BulkInsert<ParentModel>([parent]).ExecuteAsync();
+        await ActData.BulkInsert<ChildModel>([child]).ExecuteAsync();
 
         var children = await AssertData.Children.ToArrayAsync();
 
         var savedChild = children.Should().ContainSingle().Subject;
         savedChild.Name.Should().Be(child.Name);
         savedChild.Id.Should().NotBeEmpty();
-        (await GetParentIdAsync(savedChild)).Should().Be(parent.Id);
+        (await Helpers.GetParentIdAsync(savedChild)).Should().Be(parent.Id);
     }
 
     [Test]
@@ -66,14 +68,14 @@ public class BulkInsertTests : LocalDbTestBase<DatabaseContext>
         await ArrangeData.SaveChangesAsync();
 
         var child = new ChildModel { Name = "Child", Parent = parent };
-        await ActData.BulkInsertAsync<ChildModel>([child]);
+        await ActData.BulkInsert<ChildModel>([child]).ExecuteAsync();
 
         var children = await AssertData.Children.ToArrayAsync();
 
         var savedChild = children.Should().ContainSingle().Subject;
         savedChild.Name.Should().Be(child.Name);
         savedChild.Id.Should().NotBeEmpty();
-        (await GetParentIdAsync(savedChild)).Should().Be(parent.Id);
+        (await Helpers.GetParentIdAsync(savedChild)).Should().Be(parent.Id);
     }
 
     [Test]
@@ -93,13 +95,13 @@ public class BulkInsertTests : LocalDbTestBase<DatabaseContext>
             new() { Name = "Child 5", Parent = parent },
         };
 
-        await ActData.BulkInsertAsync(children);
+        await ActData.BulkInsert(children).ExecuteAsync();
 
         var savedChildren = await AssertData.Children.ToArrayAsync();
 
         savedChildren.Select(x => x.Name).Should().BeEquivalentTo(children.Select(x => x.Name));
         savedChildren.Select(x => x.Id).Should().AllSatisfy(id => id.Should().NotBeEmpty());
-        savedChildren.Should().AllSatisfy(child => GetParentIdAsync(child).Result.Should().Be(parent.Id));
+        savedChildren.Should().AllSatisfy(child => Helpers.GetParentIdAsync(child).Result.Should().Be(parent.Id));
     }
 
     [Test]
@@ -126,12 +128,12 @@ public class BulkInsertTests : LocalDbTestBase<DatabaseContext>
             new() { Name = "Child 5", Parent = parents[4] },
         };
 
-        await ActData.BulkInsertAsync(children);
+        await ActData.BulkInsert(children).ExecuteAsync();
 
         var savedChildren = await AssertData.Children.ToArrayAsync();
         savedChildren.Select(x => x.Name).Should().BeEquivalentTo(children.Select(x => x.Name));
         savedChildren.Select(x => x.Id).Should().AllSatisfy(id => id.Should().NotBeEmpty());
-        savedChildren.Select(x => GetParentIdAsync(x).Result).Should().BeEquivalentTo(parents.Select(x => x.Id));
+        savedChildren.Select(x => Helpers.GetParentIdAsync(x).Result).Should().BeEquivalentTo(parents.Select(x => x.Id));
     }
 
     [Test]
@@ -145,9 +147,7 @@ public class BulkInsertTests : LocalDbTestBase<DatabaseContext>
             new() { Name = "Parent 4" },
             new() { Name = "Parent 5" },
         };
-        
-        
-        
+
         var children = new ChildModel[]
         {
             new() { Name = "Child 1", Parent = parents[0] },
@@ -157,31 +157,10 @@ public class BulkInsertTests : LocalDbTestBase<DatabaseContext>
             new() { Name = "Child 5", Parent = parents[4] },
         };
 
-        await ActData.BulkInsertAsync(parents);
-        await ActData.BulkInsertAsync(children);
+        await ActData.BulkInsert(parents).ExecuteAsync();
+        await ActData.BulkInsert(children).ExecuteAsync();
 
         var savedChildren = await AssertData.Children.Include(x => x.Parent).ToArrayAsync();
         savedChildren.Select(x => x.Parent.Name).Should().BeEquivalentTo(parents.Select(x => x.Name));
-    }
-
-    private static async Task<Guid?> GetParentIdAsync(ChildModel child)
-    {
-        await using var command = Instance.Database.Connection.CreateCommand();
-        command.CommandText = "SELECT ParentId FROM Test.Children WHERE Id = @id";
-
-        var parameter = command.CreateParameter();
-        parameter.ParameterName = "@id";
-        parameter.Value = child.Id;
-        command.Parameters.Add(parameter);
-
-        if (command.Connection!.State != ConnectionState.Open)
-            await command.Connection.OpenAsync();
-
-        var result = await command.ExecuteScalarAsync();
-
-        if (result == DBNull.Value || result == null)
-            return null;
-
-        return (Guid)result;
     }
 }

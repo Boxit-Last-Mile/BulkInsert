@@ -110,7 +110,7 @@ internal class ModelDataReader<TModel> : IDataReader {
     }
 
     /// <summary>
-    /// Beschreibt ein Datenbankfeld für den Modeltypen, welches in der Datenbank gleich heißt, wie die Property am Model
+    /// Beschreibt ein Datenbankfeld für den Typ des Models, welches in der Datenbank gleich heißt, wie die Property am Model
     /// </summary>
     /// <param name="fieldExpression">Eine Funktion, die das Feld aus dem Model liest</param>
     /// <typeparam name="TField">Der Typ der Feld-Property</typeparam>
