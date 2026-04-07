@@ -13,12 +13,12 @@ namespace Boxit.BulkInsert.SQLServer;
 /// This class enables the <see cref="SqlBulkCopy"/> class to operate on a <see cref="IEnumerable{T}"/> 
 /// </summary>
 /// <typeparam name="TModel">The type of model</typeparam>
-internal class ModelDataReader<TModel> : IDataReader
+internal class ModelDataReader<TModel>(IEnumerable<TModel> entities) : IDataReader
 {
     public record Field(string Name, Func<TModel, object?> Accessor);
 
     private readonly List<Field> _fields = [];
-    private IEnumerator<TModel>? _enumerator;
+    private IEnumerator<TModel>? _enumerator = entities.GetEnumerator();
 
     internal IReadOnlyCollection<Field> Fields => _fields.AsReadOnly();
 
@@ -29,13 +29,6 @@ internal class ModelDataReader<TModel> : IDataReader
         return principalEntity == null
             ? null
             : principalKeyProperty.GetValue(principalEntity);
-    }
-
-    public ModelDataReader(IEnumerable<TModel> entities)
-    {
-        var data = entities.ToArray();
-        RecordsAffected = data.Length;
-        _enumerator = (data as IEnumerable<TModel>).GetEnumerator();
     }
 
     /// <summary>
@@ -302,7 +295,7 @@ internal class ModelDataReader<TModel> : IDataReader
     public int Depth => throw new NotSupportedException();
 
     public bool IsClosed => _enumerator == null;
-    public int RecordsAffected { get; }
+    public int RecordsAffected => -1;
 
     public void Dispose()
     {
