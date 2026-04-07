@@ -133,7 +133,8 @@ public class BulkInsertTests : LocalDbTestBase<DatabaseContext>
         var savedChildren = await AssertData.Children.ToArrayAsync();
         savedChildren.Select(x => x.Name).Should().BeEquivalentTo(children.Select(x => x.Name));
         savedChildren.Select(x => x.Id).Should().AllSatisfy(id => id.Should().NotBeEmpty());
-        savedChildren.Select(x => Helpers.GetParentIdAsync(x).Result).Should().BeEquivalentTo(parents.Select(x => x.Id));
+        savedChildren.Select(x => Helpers.GetParentIdAsync(x).Result).Should()
+            .BeEquivalentTo(parents.Select(x => x.Id));
     }
 
     [Test]

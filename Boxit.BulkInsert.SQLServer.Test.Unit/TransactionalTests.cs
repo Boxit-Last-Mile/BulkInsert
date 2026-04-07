@@ -30,11 +30,11 @@ public class TransactionalTests : LocalDbTestBase<DatabaseContext>
             .ExecuteAsync();
 
         await transaction.CommitAsync();
-        
+
         var savedParents = await AssertData.Parents.ToArrayAsync();
         savedParents.Should().BeEquivalentTo(parents);
     }
-    
+
     [Test]
     public async Task BulkInsert_WhenTransactionIsReverted_DoesNotChangeDatabase()
     {
@@ -54,7 +54,7 @@ public class TransactionalTests : LocalDbTestBase<DatabaseContext>
             .ExecuteAsync();
 
         await transaction.RollbackAsync();
-        
+
         var savedParents = await AssertData.Parents.ToArrayAsync();
         savedParents.Should().BeEmpty();
     }

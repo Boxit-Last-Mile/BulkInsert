@@ -40,10 +40,11 @@ public class BulkInsertBuilder<TModel>
         var dataReader = new ModelDataReader<TModel>(_entities)
             .WithFieldsFromDbContext(_dbContext);
 
-        var bulkCopy = _transaction is null 
-            ? new SqlBulkCopy((SqlConnection)_dbContext.Database.GetDbConnection()) 
-            : new SqlBulkCopy((SqlConnection)_dbContext.Database.GetDbConnection(), SqlBulkCopyOptions.Default,  _transaction);
-        
+        var bulkCopy = _transaction is null
+            ? new SqlBulkCopy((SqlConnection)_dbContext.Database.GetDbConnection())
+            : new SqlBulkCopy((SqlConnection)_dbContext.Database.GetDbConnection(), SqlBulkCopyOptions.Default,
+                _transaction);
+
         bulkCopy.DestinationTableName = $"{_entityType.GetSchema()}.{_entityType.GetTableName()}";
         bulkCopy.EnableStreaming = true;
 
