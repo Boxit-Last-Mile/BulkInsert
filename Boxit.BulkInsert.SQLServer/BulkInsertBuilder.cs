@@ -13,6 +13,7 @@ public class BulkInsertBuilder<TModel>
     private readonly DbContext _dbContext;
     private readonly IEnumerable<TModel> _entities;
     private readonly IEntityType _entityType;
+    private TimeSpan? _timeout;
 
     internal BulkInsertBuilder(DbContext dbContext, IEnumerable<TModel> entities, IEntityType entityType)
     {
@@ -33,6 +34,22 @@ public class BulkInsertBuilder<TModel>
     }
 
     /// <summary>
+    /// Overrides the default timeout for the bulk insert 
+    /// </summary>
+    /// <exception cref="ArgumentOutOfRangeException">If the timeout is less than one second</exception>
+    /// <remarks>
+    /// If the bulk operation takes longer than the defined timeout, it will fail
+    /// </remarks>
+    public BulkInsertBuilder<TModel> WithTimeout(TimeSpan timeout)
+    {
+        ArgumentOutOfRangeException.ThrowIfLessThan(timeout, TimeSpan.FromSeconds(1));
+
+        _timeout = timeout;
+        
+        return this;
+    }
+
+    /// <summary>
     /// Executes the configured bulk insert
     /// </summary>
     public async Task ExecuteAsync()
@@ -45,6 +62,7 @@ public class BulkInsertBuilder<TModel>
             : new SqlBulkCopy((SqlConnection)_dbContext.Database.GetDbConnection(), SqlBulkCopyOptions.Default,
                 _transaction);
 
+        
         bulkCopy.DestinationTableName = $"{_entityType.GetSchema()}.{_entityType.GetTableName()}";
         bulkCopy.EnableStreaming = true;
 
@@ -53,6 +71,12 @@ public class BulkInsertBuilder<TModel>
             bulkCopy.ColumnMappings.Add(field.Name, field.Name);
         }
 
+        // Apply timeout if given
+        if (_timeout.HasValue)
+        {
+            bulkCopy.BulkCopyTimeout = (int)_timeout.Value.TotalSeconds;
+        }
+        
         await bulkCopy.WriteToServerAsync(dataReader);
     }
 
